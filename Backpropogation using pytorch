@@ -1,0 +1,44 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+# Data
+torch.manual_seed(42)
+X = torch.randn(200, 2)
+y = ((X[:, 0] + X[:, 1]) > 0).float().unsqueeze(1)
+
+# Model
+class SimpleNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(2, 8)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(8, 1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        return self.sigmoid(self.fc2(x))
+
+model = SimpleNN()
+
+# Loss & Optimizer
+criterion = nn.BCELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.01)
+
+# Training Loop (Explicit Backprop)
+epochs = 100
+for epoch in range(epochs):
+    optimizer.zero_grad()   # clear old gradients
+    y_pred = model(X)       # forward
+    loss = criterion(y_pred, y)
+    loss.backward()         # BACKPROPAGATION
+    optimizer.step()        # update weights
+
+    if epoch % 20 == 0:
+        print(f"Epoch {epoch}, Loss: {loss.item():.4f}")
+
+# Accuracy
+preds = (y_pred >= 0.5).float()
+acc = (preds == y).float().mean()
+print("Final Accuracy:", acc.item())
