@@ -1,0 +1,51 @@
+import numpy as np
+
+# 1. Create Dataset
+X = np.linspace(-2, 2, 100).reshape(-1, 1)
+y = X ** 2
+
+# 2. Initialize Parameters
+np.random.seed(1)
+W1 = np.random.randn(1, 10)
+b1 = np.zeros((1, 10))
+W2 = np.random.randn(10, 1)
+b2 = np.zeros((1, 1))
+learning_rate = 0.01
+epochs = 1000
+
+# 3. Activation Functions
+def relu(z):
+    return np.maximum(0, z)
+
+def relu_derivative(z):
+    return (z > 0).astype(float)
+
+# 4. Training Loop
+for epoch in range(epochs):
+    z1 = X @ W1 + b1
+    a1 = relu(z1)
+    z2 = a1 @ W2 + b2
+    y_pred = z2
+
+    # ---- Loss (Mean Squared Error) ----
+    loss = np.mean((y - y_pred) ** 2)
+
+    # ---- Backpropagation ----
+    dL_dy = 2 * (y_pred - y) / len(y)
+    dW2 = a1.T @ dL_dy
+    db2 = np.sum(dL_dy, axis=0, keepdims=True)
+    da1 = dL_dy @ W2.T
+    dz1 = da1 * relu_derivative(z1)
+    dW1 = X.T @ dz1
+    db1 = np.sum(dz1, axis=0, keepdims=True)
+
+    # ---- Update Weights ----
+    W2 -= learning_rate * dW2
+    b2 -= learning_rate * db2
+    W1 -= learning_rate * dW1
+    b1 -= learning_rate * db1
+
+    if epoch % 100 == 0:
+        print(f"Epoch {epoch}, Loss: {loss:.6f}")
+
+print("Training finished.")
